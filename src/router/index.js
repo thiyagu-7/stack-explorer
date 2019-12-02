@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Home from "../views/Home.vue";
-
+import StackExplorerInput from "@/components/StackExplorerInput.vue";
 Vue.use(VueRouter);
 
 const routes = [
@@ -9,6 +9,11 @@ const routes = [
     path: "/",
     name: "home",
     component: Home
+  },
+  {
+    path: "/input",
+    name: "StackExplorerInput",
+    component: StackExplorerInput
   },
   {
     path: "/about",
