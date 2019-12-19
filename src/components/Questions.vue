@@ -1,6 +1,28 @@
 <template>
     <div>
-        <div ng-if="questions.length > 0">
+        <div class="pb-4 info-banner">
+            <b-alert show variant="info">
+                Questions for
+                <b>{{tagsArray}}</b> with minimum
+                <b>{{minVotes}}</b> votes from
+                <b>
+                    <FriendlyDate
+                        :date="formattedStartDate.date"
+                        :month="formattedStartDate.month"
+                        :year="formattedStartDate.year"
+                    />
+                </b> to
+                <b>
+                    <FriendlyDate
+                        :date="formattedEndDate.date"
+                        :month="formattedEndDate.month"
+                        :year="formattedEndDate.year"
+                    />
+                </b>
+            </b-alert>
+        </div>
+
+        <div v-if="questions.length > 0">
             <PostDetailCard
                 v-for="(question, i) in questions"
                 :key="'question-' + i"
@@ -15,16 +37,21 @@
                 :profileImage="question.owner.profile_image"
                 :ownerProfileLink="question.owner.link"
             />
+
+            <div class="overflow-auto">
+                <b-pagination-nav
+                    align="center"
+                    :link-gen="linkGen"
+                    v-on:input="transitionPage"
+                    v-model="activePage"
+                    no-page-detect
+                    :number-of-pages="numPages"
+                    use-router
+                ></b-pagination-nav>
+            </div>
         </div>
-        <div class="overflow-auto">
-            <b-pagination-nav align="center"
-                :link-gen="linkGen"
-                v-on:input="transitionPage"
-                v-model="activePage"
-                no-page-detect
-                :number-of-pages="numPages"
-                use-router
-            ></b-pagination-nav>
+        <div v-if="questions.length == 0" class="pb-4 info-banner">
+            <b-alert show variant="warning">No questions found for the above criteria</b-alert>
         </div>
     </div>
 </template>
@@ -32,12 +59,14 @@
 <script>
 import StackExchangeClient from '@/services/StackExchangeClient';
 import PostDetailCard from '@/components/PostDetailCard.vue';
+import FriendlyDate from '@/components/FriendlyDate.vue';
 
 let domParser = new DOMParser();
 
 export default {
     components: {
-        PostDetailCard
+        PostDetailCard,
+        FriendlyDate
     },
     props: {
         from: {
@@ -121,7 +150,34 @@ export default {
                     );
                 })
                 .catch(err => window.console.log(err));
+        },
+        convertDateToMillisecPrecision(date) {
+            let d = new Date(date * 1000);
+            return {
+                date: d.getDate(),
+                month: d.getMonth() + 1,
+                year: d.getFullYear()
+            };
+        }
+    },
+    computed: {
+        formattedStartDate() {
+            return this.convertDateToMillisecPrecision(this.from);
+        },
+        formattedEndDate() {
+            return this.convertDateToMillisecPrecision(this.to);
+        },
+        tagsArray() {
+            return this.tags.split(';');
         }
     }
 };
 </script>
+
+<style scoped>
+.info-banner {
+    width: 80%;
+    margin: 0 auto;
+    max-width: 1000px;
+}
+</style>
