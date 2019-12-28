@@ -13,13 +13,7 @@
                 </b-col>
                 <b-col sm="2.5">
                     <h5>Minimum number of votes</h5>
-                    <b-form-input
-                        size="sm"
-                        type="number"
-                        min="0"
-                        v-model="minVotes"
-                        :state="!!minVotes && minVotes >= 0"
-                    ></b-form-input>
+                    <b-form-input size="sm" type="number" v-model="minVotes" :state="!!minVotes"></b-form-input>
                 </b-col>
                 <b-col>
                     <h5>End date</h5>
@@ -83,6 +77,7 @@
 
 <script>
 import AllTags from '@/data/tags.json';
+
 export default {
     data() {
         return {
@@ -99,16 +94,39 @@ export default {
     },
     methods: {
         check() {
-            alert(JSON.stringify(this.selectedTagsInput));
-            alert(this.minVotes);
-            alert(this.fromDate);
-            alert(this.toDate);
+            if (this.validateInputs()) {
+                this.$router.push({
+                    path: 'questions',
+                    query: {
+                        from: this.parseDateToTimestamp(this.fromDate),
+                        to: this.parseDateToTimestamp(this.toDate),
+                        minvotes: this.minVotes,
+                        tags: this.selectedTagsInput
+                            .map(obj => obj.tag)
+                            .join(';')
+                    }
+                });
+            }
         },
         addTagAtIndex(index) {
             this.selectedTagsInput.splice(index + 1, 0, { tag: '' });
         },
         removeTagAtIndex(index) {
             this.selectedTagsInput.splice(index, 1);
+        },
+        validateInputs() {
+            if (!this.minVotes) {
+                alert('Please enter the minimum number of votes');
+                return false;
+            }
+            if (this.selectedTagsInput.some(obj => !obj.tag)) {
+                alert('One or more tags values are empty');
+                return false;
+            }
+            return true;
+        },
+        parseDateToTimestamp(d) {
+            return new Date(d).getTime() / 1000;
         }
     }
 };
